@@ -3,6 +3,7 @@ import passport from 'passport';
 import { AppModule } from './app.module';
 import { sessionConfig } from './config/session.config';
 import { corsOptions } from './config/cors.config';
+import { globalValidationPipe } from './config/validation.config';
 
 async function bootstrap() {
   // Start the application from the main module
@@ -20,6 +21,9 @@ async function bootstrap() {
 
   // Set global route prefix for all application routes
   app.setGlobalPrefix('api');
+
+  // Enable validation of application DTOs
+  app.useGlobalPipes(globalValidationPipe);
 
   await app.listen(process.env.PORT ?? 3000);
 }
