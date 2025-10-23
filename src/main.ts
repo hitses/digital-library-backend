@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import passport from 'passport';
 import { AppModule } from './app.module';
 import { sessionConfig } from './config/session.config';
 
@@ -8,6 +9,10 @@ async function bootstrap() {
 
   // Configure session middleware
   app.use(sessionConfig);
+
+  // Initialize Passport and restore authentication state, if any, from the session
+  app.use(passport.initialize());
+  app.use(passport.session());
 
   await app.listen(process.env.PORT ?? 3000);
 }
