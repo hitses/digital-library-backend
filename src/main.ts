@@ -4,6 +4,7 @@ import { AppModule } from './app.module';
 import { sessionConfig } from './config/session.config';
 import { corsOptions } from './config/cors.config';
 import { globalValidationPipe } from './config/validation.config';
+import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
   // Start the application from the main module
@@ -24,6 +25,10 @@ async function bootstrap() {
 
   // Enable validation of application DTOs
   app.useGlobalPipes(globalValidationPipe);
+
+  // Enable HTTP request logging in console for development and testing environments
+  if (process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'test')
+    app.useLogger(new Logger());
 
   await app.listen(process.env.PORT ?? 3000);
 }
