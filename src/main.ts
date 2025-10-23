@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { Request, Response, NextFunction } from 'express';
 import passport from 'passport';
 import { AppModule } from './app.module';
 import { sessionConfig } from './config/session.config';
@@ -30,7 +31,16 @@ async function bootstrap() {
   if (process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'test')
     app.useLogger(new Logger());
 
-  await app.listen(process.env.PORT ?? 3000);
+  // Remove X-Powered-By header from responses
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    res.removeHeader('X-Powered-By');
+    next();
+  });
+
+  // Start the application on the configured port
+  const port = process.env.PORT || 3000;
+
+  await app.listen(port);
 }
 
 void bootstrap();
