@@ -41,6 +41,12 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
 
   await app.listen(port);
+
+  Logger.log(
+    `🚀 ${process.env.NAME} Backend running on port ${port}`,
+    'NestApplication',
+  );
+  Logger.log(`✅ Server ready on http://localhost:${port}`, 'NestApplication');
 }
 
 void bootstrap();
