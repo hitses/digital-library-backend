@@ -18,6 +18,9 @@ async function bootstrap() {
   // Enable CORS
   app.enableCors(corsOptions);
 
+  // Set global route prefix for all application routes
+  app.setGlobalPrefix('api');
+
   await app.listen(process.env.PORT ?? 3000);
 }
 
