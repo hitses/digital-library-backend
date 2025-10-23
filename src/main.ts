@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import passport from 'passport';
 import { AppModule } from './app.module';
 import { sessionConfig } from './config/session.config';
+import { corsOptions } from './config/cors.config';
 
 async function bootstrap() {
   // Start the application from the main module
@@ -13,6 +14,9 @@ async function bootstrap() {
   // Initialize Passport and restore authentication state, if any, from the session
   app.use(passport.initialize());
   app.use(passport.session());
+
+  // Enable CORS
+  app.enableCors(corsOptions);
 
   await app.listen(process.env.PORT ?? 3000);
 }
