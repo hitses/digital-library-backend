@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { Request, Response, NextFunction } from 'express';
-import passport from 'passport';
 import { AppModule } from './app.module';
 import { sessionConfig } from './config/session.config';
 import { corsOptions } from './config/cors.config';
@@ -13,10 +12,6 @@ async function bootstrap() {
 
   // Configure session middleware
   app.use(sessionConfig);
-
-  // Initialize Passport and restore authentication state, if any, from the session
-  app.use(passport.initialize());
-  app.use(passport.session());
 
   // Enable CORS
   app.enableCors(corsOptions);
