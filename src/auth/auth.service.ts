@@ -68,6 +68,8 @@ export class AuthService {
     try {
       admin.password = await bcrypt.hash(newPassword, 10);
 
+      admin.mustChangePassword = false;
+
       await admin.save();
     } catch (error) {
       console.log(error);
