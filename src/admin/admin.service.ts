@@ -1,11 +1,19 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  HttpException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { Admin } from './entities/admin.entity';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
-import { createErrorResponse } from 'src/common/methods/errors';
+import {
+  createErrorResponse,
+  updateErrorResponse,
+} from 'src/common/methods/errors';
 
 @Injectable()
 export class AdminService {
@@ -32,16 +40,25 @@ export class AdminService {
     return await this.adminModel.findOne({ _id: id, delete: false });
   }
 
-  async update(
-    id: string,
-    updateAdminDto: UpdateAdminDto,
-  ): Promise<Admin | null> {
+  async update(id: string, updateAdminDto: UpdateAdminDto): Promise<Admin> {
     if ('password' in updateAdminDto)
       throw new ForbiddenException('Password cannot be changed via this route');
 
-    return await this.adminModel.findByIdAndUpdate(id, updateAdminDto, {
-      new: true,
-    });
+    try {
+      const updatedAdmin = await this.adminModel.findOneAndUpdate(
+        { _id: id, delete: false },
+        updateAdminDto,
+        { new: true },
+      );
+
+      if (!updatedAdmin) throw new NotFoundException('Admin not found');
+
+      return updatedAdmin;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+
+      return updateErrorResponse('Admin', error);
+    }
   }
 
   async remove(currentAdmin: Admin, id: string): Promise<Admin | null> {
