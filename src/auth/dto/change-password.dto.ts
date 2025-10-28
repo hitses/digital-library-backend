@@ -8,7 +8,7 @@ export class ChangePasswordDto {
     message:
       'Password must have an uppercase, a lowercase, and a number character',
   })
-  newPassword: string;
+  currentPassword: string;
 
   @IsString()
   @MinLength(8)
@@ -17,5 +17,5 @@ export class ChangePasswordDto {
     message:
       'Password must have an uppercase, a lowercase, and a number character',
   })
-  oldPassword: string;
+  newPassword: string;
 }

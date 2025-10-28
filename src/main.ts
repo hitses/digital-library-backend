@@ -41,7 +41,7 @@ async function bootstrap() {
     `🚀 ${process.env.NAME} Backend running on port ${port}`,
     'NestApplication',
   );
-  Logger.log(`✅ Server ready on http://localhost:${port}`, 'NestApplication');
+  Logger.log(`✅ Server ready on http://localhost:${port}/`, 'NestApplication');
 }
 
 bootstrap().catch((error) => {

@@ -1,4 +1,10 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -7,6 +13,7 @@ import { Admin } from '../admin/entities/admin.entity';
 import { LoginDto } from './dto/login.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -43,12 +50,15 @@ export class AuthService {
 
   async changePassword(
     adminId: string,
-    currentPassword: string,
-    newPassword: string,
+    changePasswordDto: ChangePasswordDto,
   ): Promise<void> {
-    const admin = await this.adminModel.findById(adminId).select('+password');
+    const admin = await this.adminModel.findById(adminId);
+    const { currentPassword, newPassword } = changePasswordDto;
 
-    if (!admin) throw new UnauthorizedException('Admin not found');
+    if (!admin) throw new NotFoundException('Admin not found');
+
+    if (!currentPassword || !newPassword)
+      throw new NotFoundException('Current or new passwords are required');
 
     const isPasswordValid = await bcrypt.compare(
       currentPassword,
@@ -56,9 +66,18 @@ export class AuthService {
     );
 
     if (!isPasswordValid)
-      throw new UnauthorizedException('Current password is incorrect');
+      throw new BadRequestException('Current password is incorrect');
 
-    admin.password = await bcrypt.hash(newPassword, 10);
-    await admin.save();
+    try {
+      admin.password = await bcrypt.hash(newPassword, 10);
+
+      await admin.save();
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        'Could not change password',
+        error,
+      );
+    }
   }
 }

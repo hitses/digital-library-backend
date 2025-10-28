@@ -5,6 +5,7 @@ import { LoginResponseDto } from './dto/login-response.dto';
 import { Auth } from './decorators/auth.decorator';
 import { CurrentAdmin } from './decorators/current-admin.decorator';
 import { type JwtPayload } from './interfaces/jwt-payload.interface';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -19,14 +20,10 @@ export class AuthController {
   @Auth()
   async changePassword(
     @CurrentAdmin() admin: JwtPayload,
-    @Body('currentPassword') currentPassword: string,
-    @Body('newPassword') newPassword: string,
+    @Body() changePasswordDto: ChangePasswordDto,
   ): Promise<{ message: string }> {
-    await this.authService.changePassword(
-      admin.id,
-      currentPassword,
-      newPassword,
-    );
+    await this.authService.changePassword(admin.id, changePasswordDto);
+
     return { message: 'Password changed successfully' };
   }
 }
