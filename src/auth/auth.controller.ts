@@ -6,6 +6,7 @@ import { Auth } from './decorators/auth.decorator';
 import { CurrentAdmin } from './decorators/current-admin.decorator';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { Admin } from 'src/admin/entities/admin.entity';
+import { SkipPasswordChangeCheck } from './decorators/skip-password-change-check.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -18,6 +19,7 @@ export class AuthController {
 
   @Patch('change-password')
   @Auth()
+  @SkipPasswordChangeCheck()
   async changePassword(
     @CurrentAdmin() admin: Admin,
     @Body() changePasswordDto: ChangePasswordDto,
