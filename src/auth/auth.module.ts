@@ -7,10 +7,10 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Admin, AdminSchema } from 'src/admin/entities/admin.entity';
+import { AdminModule } from 'src/admin/admin.module';
 
 @Module({
   imports: [
-    ConfigModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -33,6 +33,8 @@ import { Admin, AdminSchema } from 'src/admin/entities/admin.entity';
         schema: AdminSchema,
       },
     ]),
+    ConfigModule,
+    AdminModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
