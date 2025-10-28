@@ -24,8 +24,8 @@ export class AdminService {
     }
   }
 
-  findAll() {
-    return `This action returns all admin`;
+  async findAll(): Promise<Admin[]> {
+    return await this.adminModel.find();
   }
 
   async findOne(id: string): Promise<Admin | null> {

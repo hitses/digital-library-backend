@@ -12,6 +12,7 @@ import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { MongoIdPipe } from 'src/common/pipes/mongo-id.pipe';
+import { Admin } from './entities/admin.entity';
 
 @Controller('admin')
 @Auth()
@@ -19,12 +20,12 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Post()
-  create(@Body() createAdminDto: CreateAdminDto) {
+  create(@Body() createAdminDto: CreateAdminDto): Promise<Admin> {
     return this.adminService.create(createAdminDto);
   }
 
   @Get()
-  findAll() {
+  findAll(): Promise<Admin[]> {
     return this.adminService.findAll();
   }
 
