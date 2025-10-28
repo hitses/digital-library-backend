@@ -53,6 +53,7 @@ export class AdminSeedService implements OnModuleInit {
         lastname: defaultLastName,
         email: defaultEmail,
         password: hashedPassword,
+        mustChangePassword: false,
       });
 
       this.logger.log(
