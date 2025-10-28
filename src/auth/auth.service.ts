@@ -49,13 +49,10 @@ export class AuthService {
   }
 
   async changePassword(
-    adminId: string,
+    admin: Admin,
     changePasswordDto: ChangePasswordDto,
   ): Promise<void> {
-    const admin = await this.adminModel.findById(adminId);
     const { currentPassword, newPassword } = changePasswordDto;
-
-    if (!admin) throw new NotFoundException('Admin not found');
 
     if (!currentPassword || !newPassword)
       throw new NotFoundException('Current or new passwords are required');
