@@ -1,9 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Admin } from './entities/admin.entity';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class AdminService {
+  constructor(@InjectModel(Admin.name) private adminModel: Model<Admin>) {}
+
   create(createAdminDto: CreateAdminDto) {
     console.log(createAdminDto);
     return 'This action adds a new admin';
@@ -13,8 +18,8 @@ export class AdminService {
     return `This action returns all admin`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} admin`;
+  async findOne(id: string): Promise<Admin | null> {
+    return await this.adminModel.findById(id);
   }
 
   update(id: number, updateAdminDto: UpdateAdminDto) {
