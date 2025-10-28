@@ -25,11 +25,11 @@ export class AdminService {
   }
 
   async findAll(): Promise<Admin[]> {
-    return await this.adminModel.find();
+    return await this.adminModel.find({ delete: false });
   }
 
   async findOne(id: string): Promise<Admin | null> {
-    return await this.adminModel.findById(id);
+    return await this.adminModel.findOne({ _id: id, delete: false });
   }
 
   async update(
