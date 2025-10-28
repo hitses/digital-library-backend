@@ -87,14 +87,19 @@ export class AdminService {
     }
   }
 
-  async remove(currentAdmin: Admin, id: string): Promise<Admin | null> {
+  async remove(currentAdmin: Admin, id: string): Promise<Admin> {
     if (currentAdmin._id.toString() === id)
       throw new ForbiddenException("You can't delete yourself");
 
-    return await this.adminModel.findByIdAndUpdate(
-      id,
+    const deleted = await this.adminModel.findOneAndUpdate(
+      { _id: id, delete: false },
       { delete: true },
       { new: true },
     );
+
+    if (!deleted)
+      throw new NotFoundException('Admin not found or already deleted');
+
+    return deleted;
   }
 }
