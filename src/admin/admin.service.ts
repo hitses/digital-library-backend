@@ -16,14 +16,18 @@ import {
   updateErrorResponse,
 } from 'src/common/methods/errors';
 import { generateRandomPassword } from '../common/methods/random-password';
+import { MailService } from 'src/mail/mail.service';
+import { capitalizeWords } from 'src/common/methods/capitalize';
 
 @Injectable()
 export class AdminService {
-  constructor(@InjectModel(Admin.name) private adminModel: Model<Admin>) {}
+  constructor(
+    private readonly mailService: MailService,
+    @InjectModel(Admin.name) private adminModel: Model<Admin>,
+  ) {}
 
   async create(createAdminDto: CreateAdminDto): Promise<Admin> {
     const randomPassword = generateRandomPassword();
-    console.log(randomPassword); // TODO: Eliminar cuando se añada Nodemailer
     const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
     const existingAdmin = await this.adminModel.findOne({
@@ -36,6 +40,9 @@ export class AdminService {
         password: hashedPassword,
         delete: false,
       });
+
+      await this.sendEmail(existingAdmin, randomPassword);
+
       return existingAdmin.save();
     }
 
@@ -48,6 +55,9 @@ export class AdminService {
         ...createAdminDto,
         password: hashedPassword,
       });
+
+      await this.sendEmail(newAdmin, randomPassword);
+
       return newAdmin;
     } catch (error) {
       return createErrorResponse('Admin', error);
@@ -101,5 +111,19 @@ export class AdminService {
       throw new NotFoundException('Admin not found or already deleted');
 
     return deleted;
+  }
+
+  private async sendEmail(admin: Admin, password: string) {
+    await this.mailService.sendEmail(
+      admin.email,
+      `Contraseña de ${capitalizeWords(admin.name)} ${capitalizeWords(admin.lastname)}`,
+      './auth/register',
+      {
+        name: capitalizeWords(admin.name),
+        lastname: capitalizeWords(admin.lastname),
+        password,
+        year: new Date().getFullYear(),
+      },
+    );
   }
 }
