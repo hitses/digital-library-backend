@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   ForbiddenException,
   HttpException,
   Injectable,
@@ -14,18 +15,39 @@ import {
   createErrorResponse,
   updateErrorResponse,
 } from 'src/common/methods/errors';
+import { generateRandomPassword } from '../common/methods/random-password';
 
 @Injectable()
 export class AdminService {
   constructor(@InjectModel(Admin.name) private adminModel: Model<Admin>) {}
 
   async create(createAdminDto: CreateAdminDto): Promise<Admin> {
-    const hashedPassword = await bcrypt.hash(createAdminDto.password, 10);
-    createAdminDto.password = hashedPassword;
+    const randomPassword = generateRandomPassword();
+    console.log(randomPassword); // TODO: Eliminar cuando se añada Nodemailer
+    const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+    const existingAdmin = await this.adminModel.findOne({
+      email: createAdminDto.email,
+    });
+
+    if (existingAdmin?.delete) {
+      Object.assign(existingAdmin, {
+        ...createAdminDto,
+        password: hashedPassword,
+        delete: false,
+      });
+      return existingAdmin.save();
+    }
+
+    if (existingAdmin) {
+      throw new ConflictException('Admin with this email already exists');
+    }
 
     try {
-      const newAdmin = await this.adminModel.create(createAdminDto);
-
+      const newAdmin = await this.adminModel.create({
+        ...createAdminDto,
+        password: hashedPassword,
+      });
       return newAdmin;
     } catch (error) {
       return createErrorResponse('Admin', error);
