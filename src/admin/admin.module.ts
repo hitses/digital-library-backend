@@ -11,6 +11,7 @@ import { Admin, AdminSchema } from './entities/admin.entity';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     MongooseModule.forFeature([{ name: Admin.name, schema: AdminSchema }]),
   ],
+  exports: [AdminService],
   controllers: [AdminController],
   providers: [AdminSeedService, AdminService],
 })
