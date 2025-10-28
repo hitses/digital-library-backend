@@ -44,7 +44,14 @@ export class AdminService {
     });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} admin`;
+  async remove(currentAdmin: Admin, id: string): Promise<Admin | null> {
+    if (currentAdmin._id.toString() === id)
+      throw new ForbiddenException("You can't delete yourself");
+
+    return await this.adminModel.findByIdAndUpdate(
+      id,
+      { delete: true },
+      { new: true },
+    );
   }
 }

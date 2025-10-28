@@ -13,6 +13,7 @@ import { UpdateAdminDto } from './dto/update-admin.dto';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { MongoIdPipe } from 'src/common/pipes/mongo-id.pipe';
 import { Admin } from './entities/admin.entity';
+import { CurrentAdmin } from 'src/auth/decorators/current-admin.decorator';
 
 @Controller('admin')
 @Auth()
@@ -43,7 +44,10 @@ export class AdminController {
   }
 
   @Delete(':id')
-  remove(@Param('id', MongoIdPipe) id: string) {
-    return this.adminService.remove(+id);
+  remove(
+    @CurrentAdmin() currentAdmin: Admin,
+    @Param('id', MongoIdPipe) id: string,
+  ) {
+    return this.adminService.remove(currentAdmin, id);
   }
 }
