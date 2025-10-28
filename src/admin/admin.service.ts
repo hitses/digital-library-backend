@@ -58,8 +58,12 @@ export class AdminService {
     return await this.adminModel.find({ delete: false });
   }
 
-  async findOne(id: string): Promise<Admin | null> {
-    return await this.adminModel.findOne({ _id: id, delete: false });
+  async findOne(id: string): Promise<Admin> {
+    const admin = await this.adminModel.findOne({ _id: id, delete: false });
+
+    if (!admin) throw new NotFoundException('Admin not found or deleted');
+
+    return admin;
   }
 
   async update(id: string, updateAdminDto: UpdateAdminDto): Promise<Admin> {
