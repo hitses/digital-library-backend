@@ -9,7 +9,7 @@ export class Admin extends Document {
   name: string;
 
   @Prop({ required: false, lowercase: true, trim: true })
-  lastname?: string;
+  lastname: string;
 
   @Prop({ required: true, unique: true, lowercase: true, trim: true })
   email: string;
