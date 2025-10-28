@@ -1,17 +1,27 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import * as bcrypt from 'bcrypt';
+import { Admin } from './entities/admin.entity';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
-import { InjectModel } from '@nestjs/mongoose';
-import { Admin } from './entities/admin.entity';
-import { Model } from 'mongoose';
+import { createErrorResponse } from 'src/common/methods/errors';
 
 @Injectable()
 export class AdminService {
   constructor(@InjectModel(Admin.name) private adminModel: Model<Admin>) {}
 
-  create(createAdminDto: CreateAdminDto) {
-    console.log(createAdminDto);
-    return 'This action adds a new admin';
+  async create(createAdminDto: CreateAdminDto): Promise<Admin> {
+    const hashedPassword = await bcrypt.hash(createAdminDto.password, 10);
+    createAdminDto.password = hashedPassword;
+
+    try {
+      const newAdmin = await this.adminModel.create(createAdminDto);
+
+      return newAdmin;
+    } catch (error) {
+      return createErrorResponse('Admin', error);
+    }
   }
 
   findAll() {
