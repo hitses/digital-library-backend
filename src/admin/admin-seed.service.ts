@@ -50,7 +50,7 @@ export class AdminSeedService implements OnModuleInit {
 
       await this.adminModel.create({
         name: defaultName,
-        lastName: defaultLastName,
+        lastname: defaultLastName,
         email: defaultEmail,
         password: hashedPassword,
       });
