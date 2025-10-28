@@ -19,6 +19,9 @@ export class Admin extends Document {
   })
   password: string;
 
+  @Prop({ required: true, default: true })
+  mustChangePassword: boolean;
+
   @Prop({
     required: true,
     default: false,
