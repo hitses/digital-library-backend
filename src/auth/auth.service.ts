@@ -25,7 +25,7 @@ export class AuthService {
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
     const { email, password } = loginDto;
 
-    const admin = await this.adminModel.findOne({ email }).select('+password');
+    const admin = await this.adminModel.findOne({ email, delete: false });
 
     if (!admin) throw new UnauthorizedException('Invalid credentials');
 
