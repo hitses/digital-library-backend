@@ -10,8 +10,11 @@ import {
 import { AdminService } from './admin.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { MongoIdPipe } from 'src/common/pipes/mongo-id.pipe';
 
 @Controller('admin')
+@Auth()
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
@@ -26,17 +29,20 @@ export class AdminController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.adminService.findOne(+id);
+  findOne(@Param('id', MongoIdPipe) id: string) {
+    return this.adminService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAdminDto: UpdateAdminDto) {
+  update(
+    @Param('id', MongoIdPipe) id: string,
+    @Body() updateAdminDto: UpdateAdminDto,
+  ) {
     return this.adminService.update(+id, updateAdminDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', MongoIdPipe) id: string) {
     return this.adminService.remove(+id);
   }
 }
