@@ -39,7 +39,7 @@ export class AdminController {
     @Param('id', MongoIdPipe) id: string,
     @Body() updateAdminDto: UpdateAdminDto,
   ) {
-    return this.adminService.update(+id, updateAdminDto);
+    return this.adminService.update(id, updateAdminDto);
   }
 
   @Delete(':id')

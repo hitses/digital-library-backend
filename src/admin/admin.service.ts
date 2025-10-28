@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
@@ -32,9 +32,16 @@ export class AdminService {
     return await this.adminModel.findById(id);
   }
 
-  update(id: number, updateAdminDto: UpdateAdminDto) {
-    console.log(updateAdminDto);
-    return `This action updates a #${id} admin`;
+  async update(
+    id: string,
+    updateAdminDto: UpdateAdminDto,
+  ): Promise<Admin | null> {
+    if ('password' in updateAdminDto)
+      throw new ForbiddenException('Password cannot be changed via this route');
+
+    return await this.adminModel.findByIdAndUpdate(id, updateAdminDto, {
+      new: true,
+    });
   }
 
   remove(id: number) {
