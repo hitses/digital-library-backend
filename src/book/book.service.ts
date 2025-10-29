@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  HttpException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,7 +9,10 @@ import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { Book } from './entities/book.entity';
 import { Model } from 'mongoose';
-import { createErrorResponse } from 'src/common/methods/errors';
+import {
+  createErrorResponse,
+  updateErrorResponse,
+} from 'src/common/methods/errors';
 import { PAGINATION } from 'src/common/constants/pagination.constants';
 
 @Injectable()
@@ -66,9 +70,22 @@ export class BookService {
     return book;
   }
 
-  update(id: string, updateBookDto: UpdateBookDto) {
-    console.log(updateBookDto);
-    return `This action updates a #${id} book`;
+  async update(id: string, updateBookDto: UpdateBookDto): Promise<Book> {
+    try {
+      const updatedBook = await this.bookModel.findOneAndUpdate(
+        { _id: id, delete: false },
+        updateBookDto,
+        { new: true },
+      );
+
+      if (!updatedBook) throw new NotFoundException('Book not found');
+
+      return updatedBook;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+
+      return updateErrorResponse('Book', error);
+    }
   }
 
   remove(id: string) {

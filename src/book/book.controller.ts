@@ -44,10 +44,11 @@ export class BookController {
   }
 
   @Patch(':id')
+  @Auth()
   update(
     @Param('id', MongoIdPipe) id: string,
     @Body() updateBookDto: UpdateBookDto,
-  ) {
+  ): Promise<Book> {
     return this.bookService.update(id, updateBookDto);
   }
 
