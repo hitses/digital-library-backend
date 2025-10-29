@@ -11,12 +11,14 @@ import { BookService } from './book.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { MongoIdPipe } from 'src/common/pipes/mongo-id.pipe';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @Controller('book')
 export class BookController {
   constructor(private readonly bookService: BookService) {}
 
   @Post()
+  @Auth()
   create(@Body() createBookDto: CreateBookDto) {
     return this.bookService.create(createBookDto);
   }
