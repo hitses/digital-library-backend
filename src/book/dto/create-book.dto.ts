@@ -5,6 +5,7 @@ import {
   IsISBN,
   MaxLength,
   MinLength,
+  IsUrl,
 } from 'class-validator';
 
 function trim(value: any) {
@@ -41,7 +42,7 @@ export class CreateBookDto {
 
   @Transform(({ value }) => trim(value))
   @IsNotEmpty({ message: 'Cover URL is required' })
-  @IsString()
+  @IsUrl()
   @MaxLength(1000, { message: 'Cover URL too long (max 1000 chars)' })
   coverUrl: string;
 }
