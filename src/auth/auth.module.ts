@@ -19,10 +19,15 @@ import { AdminModule } from 'src/admin/admin.module';
         if (configService.get('JWT_SECRET') === undefined)
           throw new InternalServerErrorException('JWT_SECRET is not defined');
 
+        if (configService.get('JWT_EXPIRES_IN') === undefined)
+          throw new InternalServerErrorException(
+            'JWT_EXPIRES_IN is not defined',
+          );
+
         return {
           secret: configService.get<string>('JWT_SECRET'),
           signOptions: {
-            expiresIn: '12h',
+            expiresIn: configService.get('JWT_EXPIRES_IN'),
           },
         };
       },
