@@ -46,9 +46,8 @@ export class AdminService {
       return existingAdmin.save();
     }
 
-    if (existingAdmin) {
+    if (existingAdmin)
       throw new ConflictException('Admin with this email already exists');
-    }
 
     try {
       const newAdmin = await this.adminModel.create({
