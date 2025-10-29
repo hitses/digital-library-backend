@@ -100,16 +100,16 @@ export class AdminService {
     if (currentAdmin._id.toString() === id)
       throw new ForbiddenException("You can't delete yourself");
 
-    const deleted = await this.adminModel.findOneAndUpdate(
+    const deletedAdmin = await this.adminModel.findOneAndUpdate(
       { _id: id, delete: false },
       { delete: true },
       { new: true },
     );
 
-    if (!deleted)
+    if (!deletedAdmin)
       throw new NotFoundException('Admin not found or already deleted');
 
-    return deleted;
+    return deletedAdmin;
   }
 
   private async sendEmail(admin: Admin, password: string) {

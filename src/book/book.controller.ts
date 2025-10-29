@@ -53,7 +53,8 @@ export class BookController {
   }
 
   @Delete(':id')
-  remove(@Param('id', MongoIdPipe) id: string) {
+  @Auth()
+  remove(@Param('id', MongoIdPipe) id: string): Promise<Book> {
     return this.bookService.remove(id);
   }
 }

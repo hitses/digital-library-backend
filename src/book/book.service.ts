@@ -88,7 +88,16 @@ export class BookService {
     }
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} book`;
+  async remove(id: string): Promise<Book> {
+    const deletedBook = await this.bookModel.findOneAndUpdate(
+      { _id: id, delete: false },
+      { delete: true },
+      { new: true },
+    );
+
+    if (!deletedBook)
+      throw new NotFoundException('Book not found or already deleted');
+
+    return deletedBook;
   }
 }
