@@ -39,7 +39,7 @@ export class BookController {
   }
 
   @Get(':id')
-  findOne(@Param('id', MongoIdPipe) id: string) {
+  findOne(@Param('id', MongoIdPipe) id: string): Promise<Book> {
     return this.bookService.findOne(id);
   }
 

@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
@@ -54,8 +58,12 @@ export class BookService {
     return { data, total, page, limit };
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} book`;
+  async findOne(id: string): Promise<Book> {
+    const book = await this.bookModel.findOne({ _id: id, delete: false });
+
+    if (!book) throw new NotFoundException('Book not found or deleted');
+
+    return book;
   }
 
   update(id: string, updateBookDto: UpdateBookDto) {
