@@ -62,6 +62,42 @@ export class BookService {
     return { data, total, page, limit };
   }
 
+  async search(
+    query: string,
+    page = 1,
+    limit = 10,
+  ): Promise<{ data: Book[]; total: number; page: number; limit: number }> {
+    const skip = (page - 1) * limit;
+
+    // Si no hay término, buscar como findAll
+    if (!query || query.trim() === '') {
+      return this.findAll(page, limit);
+    }
+
+    const normalizedQuery = this.normalizeText(query);
+
+    // Filtro: ISBN exacto o coincidencia parcial en título/autor
+    const filter = {
+      delete: false,
+      $or: [
+        { isbn: normalizedQuery },
+        {
+          title: { $regex: this.makeAccentInsensitiveRegex(normalizedQuery) },
+        },
+        {
+          author: { $regex: this.makeAccentInsensitiveRegex(normalizedQuery) },
+        },
+      ],
+    };
+
+    const [data, total] = await Promise.all([
+      this.bookModel.find(filter).skip(skip).limit(limit),
+      this.bookModel.countDocuments(filter),
+    ]);
+
+    return { data, total, page, limit };
+  }
+
   async findOne(id: string): Promise<Book> {
     const book = await this.bookModel.findOne({ _id: id, delete: false });
 
@@ -99,5 +135,34 @@ export class BookService {
       throw new NotFoundException('Book not found or already deleted');
 
     return deletedBook;
+  }
+
+  // Normaliza texto para eliminar tildes, diéresis, ñ, etc.
+  private normalizeText(text: string): string {
+    return text
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+  }
+
+  // Genera regex insensible a acentos
+  private makeAccentInsensitiveRegex(query: string): RegExp {
+    const accentMap: Record<string, string> = {
+      a: '[aáàäâ]',
+      e: '[eéèëê]',
+      i: '[iíìïî]',
+      o: '[oóòöô]',
+      u: '[uúùüû]',
+      n: '[nñ]',
+      c: '[cç]',
+    };
+
+    const pattern = query
+      .split('')
+      .map((char) => accentMap[char] || char)
+      .join('');
+
+    return new RegExp(pattern, 'i');
   }
 }

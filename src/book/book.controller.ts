@@ -38,6 +38,15 @@ export class BookController {
     return this.bookService.findAll(+page, +limit);
   }
 
+  @Get('search')
+  search(
+    @Query('q') query: string,
+    @Query('page') page = this.defaultPage,
+    @Query('limit') limit = this.defaultLimit,
+  ): Promise<{ data: Book[]; total: number; page: number; limit: number }> {
+    return this.bookService.search(query, +page, +limit);
+  }
+
   @Get(':id')
   findOne(@Param('id', MongoIdPipe) id: string): Promise<Book> {
     return this.bookService.findOne(id);
