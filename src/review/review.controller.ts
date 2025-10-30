@@ -15,6 +15,7 @@ import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { MongoIdPipe } from 'src/common/pipes/mongo-id.pipe';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import { Review } from './entities/review.entity';
 
 @Controller('review')
 export class ReviewController {
@@ -23,12 +24,15 @@ export class ReviewController {
   @Post()
   @UseGuards(ThrottlerGuard)
   @Throttle({ default: { ttl: 600000, limit: 2 } })
-  create(@Body() createReviewDto: CreateReviewDto, @Req() req: Request) {
+  create(
+    @Body() createReviewDto: CreateReviewDto,
+    @Req() req: Request,
+  ): Promise<Review> {
     return this.reviewService.create(createReviewDto, req);
   }
 
   @Get()
-  findAll() {
+  findAll(): Promise<Review[]> {
     return this.reviewService.findAll();
   }
 

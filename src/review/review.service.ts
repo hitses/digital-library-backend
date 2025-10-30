@@ -30,8 +30,8 @@ export class ReviewService {
     return newReview;
   }
 
-  findAll() {
-    return `This action returns all review`;
+  findAll(): Promise<Review[]> {
+    return this.reviewModel.find();
   }
 
   findOne(id: string) {

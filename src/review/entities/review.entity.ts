@@ -28,9 +28,6 @@ export class Review extends Document {
   @Prop({ default: false })
   verified: boolean;
 
-  @Prop({ default: false })
-  delete: boolean;
-
   @Prop({ required: false })
   ipAddress: string;
 }
