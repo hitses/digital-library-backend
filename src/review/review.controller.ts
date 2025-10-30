@@ -16,6 +16,7 @@ import { UpdateReviewDto } from './dto/update-review.dto';
 import { MongoIdPipe } from 'src/common/pipes/mongo-id.pipe';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { Review } from './entities/review.entity';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @Controller('review')
 export class ReviewController {
@@ -42,15 +43,16 @@ export class ReviewController {
   }
 
   @Patch(':id')
+  @Auth()
   update(
     @Param('id', MongoIdPipe) id: string,
     @Body() updateReviewDto: UpdateReviewDto,
-  ) {
+  ): Promise<Review> {
     return this.reviewService.update(id, updateReviewDto);
   }
 
   @Delete(':id')
-  remove(@Param('id', MongoIdPipe) id: string) {
+  remove(@Param('id', MongoIdPipe) id: string): Promise<Review> {
     return this.reviewService.remove(id);
   }
 }

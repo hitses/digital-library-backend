@@ -1,6 +1,7 @@
 import { Request } from 'express';
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -10,6 +11,10 @@ import * as net from 'net';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { Review } from './entities/review.entity';
+import {
+  createErrorResponse,
+  updateErrorResponse,
+} from 'src/common/methods/errors';
 
 @Injectable()
 export class ReviewService {
@@ -26,12 +31,16 @@ export class ReviewService {
     if (!net.isIP(ipAddress))
       throw new BadRequestException('Invalid IP address');
 
-    const newReview = await this.reviewModel.create({
-      ...createReviewDto,
-      ipAddress,
-    });
+    try {
+      const newReview = await this.reviewModel.create({
+        ...createReviewDto,
+        ipAddress,
+      });
 
-    return newReview;
+      return newReview;
+    } catch (error) {
+      return createErrorResponse('Review', error);
+    }
   }
 
   findAll(): Promise<Review[]> {
@@ -46,12 +55,31 @@ export class ReviewService {
     return review;
   }
 
-  update(id: string, updateReviewDto: UpdateReviewDto) {
-    return updateReviewDto;
+  async update(id: string, updateReviewDto: UpdateReviewDto): Promise<Review> {
+    try {
+      const updatedReview = await this.reviewModel.findOneAndUpdate(
+        { _id: id },
+        updateReviewDto,
+        { new: true },
+      );
+
+      if (!updatedReview) throw new NotFoundException('Review not found');
+
+      return updatedReview;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+
+      return updateErrorResponse('Review', error);
+    }
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} review`;
+  async remove(id: string): Promise<Review> {
+    const deletedBook = await this.reviewModel.findOneAndDelete({ _id: id });
+
+    if (!deletedBook)
+      throw new NotFoundException('Book not found or already deleted');
+
+    return deletedBook;
   }
 
   private extractIp(req: Request): string | null {
