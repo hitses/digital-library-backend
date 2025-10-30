@@ -1,3 +1,4 @@
+import { type Request } from 'express';
 import {
   Controller,
   Get,
@@ -6,19 +7,24 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ReviewService } from './review.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { MongoIdPipe } from 'src/common/pipes/mongo-id.pipe';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
 @Controller('review')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
   @Post()
-  create(@Body() createReviewDto: CreateReviewDto) {
-    return this.reviewService.create(createReviewDto);
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { ttl: 600000, limit: 2 } })
+  create(@Body() createReviewDto: CreateReviewDto, @Req() req: Request) {
+    return this.reviewService.create(createReviewDto, req);
   }
 
   @Get()

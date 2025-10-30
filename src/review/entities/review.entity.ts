@@ -11,7 +11,7 @@ export class Review extends Document {
     ref: 'Book',
     required: true,
   })
-  book: Book;
+  bookId: Book;
 
   @Prop({ required: true, lowercase: true, trim: true })
   name: string;
