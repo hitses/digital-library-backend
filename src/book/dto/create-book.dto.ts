@@ -7,10 +7,7 @@ import {
   MinLength,
   IsUrl,
 } from 'class-validator';
-
-function trim(value: any) {
-  return typeof value === 'string' ? value.trim() : value;
-}
+import { trim } from 'src/common/methods/trim';
 
 export class CreateBookDto {
   @Transform(({ value }) => trim(value))
