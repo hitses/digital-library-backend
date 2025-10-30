@@ -1,0 +1,16 @@
+import { Module } from '@nestjs/common';
+import { ReviewService } from './review.service';
+import { ReviewController } from './review.controller';
+import { PassportModule } from '@nestjs/passport';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Review, ReviewSchema } from './entities/review.entity';
+
+@Module({
+  imports: [
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    MongooseModule.forFeature([{ name: Review.name, schema: ReviewSchema }]),
+  ],
+  controllers: [ReviewController],
+  providers: [ReviewService],
+})
+export class ReviewModule {}
