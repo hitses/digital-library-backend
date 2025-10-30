@@ -1,5 +1,9 @@
 import { Request } from 'express';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as net from 'net';
@@ -34,8 +38,12 @@ export class ReviewService {
     return this.reviewModel.find();
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} review`;
+  async findOne(id: string): Promise<Review> {
+    const review = await this.reviewModel.findById(id);
+
+    if (!review) throw new NotFoundException('Review not found or deleted');
+
+    return review;
   }
 
   update(id: string, updateReviewDto: UpdateReviewDto) {

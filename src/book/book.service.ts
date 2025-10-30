@@ -69,14 +69,14 @@ export class BookService {
   ): Promise<{ data: Book[]; total: number; page: number; limit: number }> {
     const skip = (page - 1) * limit;
 
-    // Si no hay término, buscar como findAll
+    // Si no hay query, buscar todos
     if (!query || query.trim() === '') {
       return this.findAll(page, limit);
     }
 
     const normalizedQuery = this.normalizeText(query);
 
-    // Filtro: ISBN exacto o coincidencia parcial en título/autor
+    // ISBN exacto o coincidencia parcial en título/autor
     const filter = {
       delete: false,
       $or: [
