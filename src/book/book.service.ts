@@ -8,19 +8,23 @@ import { InjectModel } from '@nestjs/mongoose';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { Book } from './entities/book.entity';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import {
   createErrorResponse,
   updateErrorResponse,
 } from 'src/common/methods/errors';
 import { PAGINATION } from 'src/common/constants/pagination.constants';
+import { Review } from 'src/review/entities/review.entity';
 
 @Injectable()
 export class BookService {
   private readonly defaultPage = PAGINATION.DEFAULT_PAGE;
   private readonly defaultLimit = PAGINATION.DEFAULT_LIMIT;
 
-  constructor(@InjectModel(Book.name) private bookModel: Model<Book>) {}
+  constructor(
+    @InjectModel(Book.name) private bookModel: Model<Book>,
+    @InjectModel(Review.name) private reviewModel: Model<Review>,
+  ) {}
 
   async create(createBookDto: CreateBookDto): Promise<Book> {
     const existingBook = await this.bookModel.findOne({
@@ -54,12 +58,14 @@ export class BookService {
   ): Promise<{ data: Book[]; total: number; page: number; limit: number }> {
     const skip = (page - 1) * limit;
 
-    const [data, total] = await Promise.all([
-      this.bookModel.find({ delete: false }).skip(skip).limit(limit),
+    const [books, total] = await Promise.all([
+      this.bookModel.find({ delete: false }).skip(skip).limit(limit).lean(),
       this.bookModel.countDocuments({ delete: false }),
     ]);
 
-    return { data, total, page, limit };
+    const booksWithRatings = await this.enrichBooksWithRatings(books);
+
+    return { data: booksWithRatings, total, page, limit };
   }
 
   async search(
@@ -70,9 +76,7 @@ export class BookService {
     const skip = (page - 1) * limit;
 
     // Si no hay query, buscar todos
-    if (!query || query.trim() === '') {
-      return this.findAll(page, limit);
-    }
+    if (!query || query.trim() === '') return this.findAll(page, limit);
 
     const normalizedQuery = this.normalizeText(query);
 
@@ -90,20 +94,36 @@ export class BookService {
       ],
     };
 
-    const [data, total] = await Promise.all([
-      this.bookModel.find(filter).skip(skip).limit(limit),
+    const [books, total] = await Promise.all([
+      this.bookModel.find(filter).skip(skip).limit(limit).lean(),
       this.bookModel.countDocuments(filter),
     ]);
 
-    return { data, total, page, limit };
+    const booksWithRatings = await this.enrichBooksWithRatings(books);
+
+    return { data: booksWithRatings, total, page, limit };
   }
 
   async findOne(id: string): Promise<Book> {
-    const book = await this.bookModel.findOne({ _id: id, delete: false });
+    const book = await this.bookModel
+      .findOne({ _id: id, delete: false })
+      .populate({
+        path: 'reviews',
+        match: { verified: true },
+        select: 'name review rating createdAt',
+        options: { sort: { createdAt: -1 } },
+      })
+      .lean();
 
     if (!book) throw new NotFoundException('Book not found or deleted');
 
-    return book;
+    const ratingStats = await this.calculateBookRating(id);
+
+    return {
+      ...book,
+      averageRating: ratingStats.averageRating,
+      totalReviews: ratingStats.totalReviews,
+    } as any;
   }
 
   async update(id: string, updateBookDto: UpdateBookDto): Promise<Book> {
@@ -164,5 +184,72 @@ export class BookService {
       .join('');
 
     return new RegExp(pattern, 'i');
+  }
+
+  private async enrichBooksWithRatings(books: any[]): Promise<Book[]> {
+    if (books.length === 0) return [];
+
+    const bookIds = books.map((book) => book._id);
+
+    const ratingsData = await this.reviewModel.aggregate([
+      {
+        $match: {
+          bookId: { $in: bookIds },
+          verified: true,
+        },
+      },
+      {
+        $group: {
+          _id: '$bookId',
+          averageRating: { $avg: '$rating' },
+          totalReviews: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const ratingsMap = new Map(
+      ratingsData.map((item) => [
+        item._id.toString(),
+        {
+          averageRating: Math.round(item.averageRating * 10) / 10,
+          totalReviews: item.totalReviews,
+        },
+      ]),
+    );
+
+    return books.map((book) => ({
+      ...book,
+      averageRating: ratingsMap.get(book._id.toString())?.averageRating || 0,
+      totalReviews: ratingsMap.get(book._id.toString())?.totalReviews || 0,
+    }));
+  }
+
+  private async calculateBookRating(
+    bookId: string,
+  ): Promise<{ averageRating: number; totalReviews: number }> {
+    const result = await this.reviewModel.aggregate([
+      {
+        $match: {
+          bookId: new Types.ObjectId(bookId),
+          verified: true,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          averageRating: { $avg: '$rating' },
+          totalReviews: { $sum: 1 },
+        },
+      },
+    ]);
+
+    if (result.length === 0) {
+      return { averageRating: 0, totalReviews: 0 };
+    }
+
+    return {
+      averageRating: Math.round(result[0].averageRating * 10) / 10,
+      totalReviews: result[0].totalReviews,
+    };
   }
 }

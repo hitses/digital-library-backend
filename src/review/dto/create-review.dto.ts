@@ -12,8 +12,8 @@ import {
 import { trim } from 'src/common/methods/trim';
 
 export class CreateReviewDto {
-  @IsMongoId({ message: 'Invalid book ID format' })
   @IsNotEmpty({ message: 'Book ID is required' })
+  @IsMongoId({ message: 'Invalid book ID format' })
   bookId: string;
 
   @IsNotEmpty({ message: 'Name is required' })

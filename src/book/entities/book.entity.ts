@@ -1,7 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
-@Schema({ timestamps: true })
+@Schema({
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
+})
 export class Book extends Document {
   declare _id: Types.ObjectId;
 
@@ -22,6 +26,17 @@ export class Book extends Document {
 
   @Prop({ default: false })
   delete: boolean;
+
+  // Virtual properties
+  reviews?: any[];
+  averageRating?: number;
+  totalReviews?: number;
 }
 
 export const BookSchema = SchemaFactory.createForClass(Book);
+
+BookSchema.virtual('reviews', {
+  ref: 'Review',
+  localField: '_id',
+  foreignField: 'bookId',
+});

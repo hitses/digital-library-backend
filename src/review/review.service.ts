@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import * as net from 'net';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
@@ -34,6 +34,7 @@ export class ReviewService {
     try {
       const newReview = await this.reviewModel.create({
         ...createReviewDto,
+        bookId: new Types.ObjectId(createReviewDto.bookId),
         ipAddress,
       });
 
