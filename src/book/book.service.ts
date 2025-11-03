@@ -141,6 +141,64 @@ export class BookService {
     return booksWithRatings;
   }
 
+  async getPopularBooks(): Promise<Book[]> {
+    const books = await this.bookModel.aggregate([
+      // Filtrar eliminados
+      { $match: { delete: false } },
+
+      // Calcular averageRating y totalReviews de reviews verificadas
+      {
+        $lookup: {
+          from: 'reviews',
+          localField: '_id',
+          foreignField: 'bookId',
+          pipeline: [
+            { $match: { verified: true } },
+            {
+              $group: {
+                _id: '$bookId',
+                averageRating: { $avg: '$rating' },
+                totalReviews: { $sum: 1 },
+              },
+            },
+          ],
+          as: 'ratingData',
+        },
+      },
+
+      // Setear valores por defecto si sin reviews
+      {
+        $addFields: {
+          averageRating: {
+            $round: [
+              {
+                $ifNull: [
+                  { $arrayElemAt: ['$ratingData.averageRating', 0] },
+                  0,
+                ],
+              },
+              1,
+            ],
+          },
+          totalReviews: {
+            $ifNull: [{ $arrayElemAt: ['$ratingData.totalReviews', 0] }, 0],
+          },
+        },
+      },
+
+      // Orden: rating desc, fecha desc
+      { $sort: { averageRating: -1, createdAt: -1 } },
+
+      // Top 12
+      { $limit: 12 },
+
+      // Limpiar lookup intermedia
+      { $project: { ratingData: 0 } },
+    ]);
+
+    return books;
+  }
+
   async findOne(id: string): Promise<Book> {
     const book = await this.bookModel
       .findOne({ _id: id, delete: false })

@@ -57,7 +57,10 @@ export class BookController {
     return this.bookService.findNewBooks();
   }
 
-  // Populares
+  @Get('popular')
+  getTopBooks() {
+    return this.bookService.getPopularBooks();
+  }
 
   @Get(':id')
   findOne(@Param('id', MongoIdPipe) id: string): Promise<Book> {
