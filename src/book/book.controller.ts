@@ -47,9 +47,11 @@ export class BookController {
     return this.bookService.search(query, +page, +limit);
   }
 
-  // Destacados
+  @Get('featured')
+  findFeaturedBooks(): Promise<Book[]> {
+    return this.bookService.findFeaturedBooks();
+  }
 
-  // Nuevos
   @Get('new')
   findNewBooks(): Promise<Book[]> {
     return this.bookService.findNewBooks();
@@ -69,6 +71,15 @@ export class BookController {
     @Body() updateBookDto: UpdateBookDto,
   ): Promise<Book> {
     return this.bookService.update(id, updateBookDto);
+  }
+
+  @Patch(':id/featured')
+  @Auth()
+  setFeatured(
+    @Param('id', MongoIdPipe) id: string,
+    @Body('featured') featured: boolean,
+  ) {
+    return this.bookService.toggleFeatured(id, featured);
   }
 
   @Delete(':id')

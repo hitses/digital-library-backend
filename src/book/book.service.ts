@@ -112,6 +112,22 @@ export class BookService {
     return { data: booksWithRatings, total, page, limit };
   }
 
+  async findFeaturedBooks(): Promise<Book[]> {
+    const featuredBooks = await this.bookModel
+      .find({ featured: true })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const booksWithRatings = await this.enrichBooksWithRatings(featuredBooks);
+
+    if (!featuredBooks || featuredBooks.length === 0)
+      throw new NotFoundException('Books not found');
+
+    console.log(booksWithRatings.length);
+
+    return booksWithRatings;
+  }
+
   async findNewBooks(): Promise<Book[]> {
     const newBooks = await this.bookModel
       .find()
@@ -165,6 +181,41 @@ export class BookService {
 
       return updateErrorResponse('Book', error);
     }
+  }
+
+  async toggleFeatured(id: string, makeFeatured: boolean): Promise<Book> {
+    const book = await this.bookModel.findById(id);
+    if (!book) throw new NotFoundException('Book not found');
+
+    if (!makeFeatured) {
+      book.featured = false;
+
+      return book.save();
+    }
+
+    if (book.featured) return book;
+
+    const count = await this.bookModel.countDocuments({ featured: true });
+
+    if (count < 12) {
+      book.featured = true;
+
+      return book.save();
+    }
+
+    const oldest = await this.bookModel
+      .findOne({ featured: true })
+      .sort({ createdAt: 1 });
+
+    if (oldest && !oldest._id.equals(book._id)) {
+      oldest.featured = false;
+
+      await oldest.save();
+    }
+
+    book.featured = true;
+
+    return book.save();
   }
 
   async remove(id: string): Promise<Book> {
