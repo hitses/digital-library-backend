@@ -52,6 +52,7 @@ export class BookService {
       const newBook = await this.bookModel.create({
         ...createBookDto,
         featured: shouldBeFeatured,
+        featuredAt: shouldBeFeatured ? new Date() : undefined,
       });
 
       return newBook;
@@ -115,7 +116,7 @@ export class BookService {
   async findFeaturedBooks(): Promise<Book[]> {
     const featuredBooks = await this.bookModel
       .find({ featured: true })
-      .sort({ createdAt: -1 })
+      .sort({ featuredAt: -1 })
       .lean();
 
     const booksWithRatings = await this.enrichBooksWithRatings(featuredBooks);
@@ -243,33 +244,43 @@ export class BookService {
     const book = await this.bookModel.findById(id);
     if (!book) throw new NotFoundException('Book not found');
 
+    // Quitar featured
     if (!makeFeatured) {
+      if (!book.featured) return book;
       book.featured = false;
+      book.featuredAt = undefined;
 
       return book.save();
     }
 
+    // Ya es featured
     if (book.featured) return book;
 
+    // Contar destacados
     const count = await this.bookModel.countDocuments({ featured: true });
 
     if (count < 12) {
       book.featured = true;
+      book.featuredAt = new Date();
 
       return book.save();
     }
 
-    const oldest = await this.bookModel
+    // Hay 12 -> rotar: quitar el primer featured según featuredAt asc
+    const oldestFeatured = await this.bookModel
       .findOne({ featured: true })
-      .sort({ createdAt: 1 });
+      .sort({ featuredAt: 1 })
+      .exec();
 
-    if (oldest && !oldest._id.equals(book._id)) {
-      oldest.featured = false;
+    if (oldestFeatured && !oldestFeatured._id.equals(book._id)) {
+      oldestFeatured.featured = false;
+      oldestFeatured.featuredAt = undefined;
 
-      await oldest.save();
+      await oldestFeatured.save();
     }
 
     book.featured = true;
+    book.featuredAt = new Date();
 
     return book.save();
   }
