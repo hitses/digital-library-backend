@@ -123,8 +123,6 @@ export class BookService {
     if (!featuredBooks || featuredBooks.length === 0)
       throw new NotFoundException('Books not found');
 
-    console.log(booksWithRatings.length);
-
     return booksWithRatings;
   }
 
