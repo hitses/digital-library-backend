@@ -44,7 +44,15 @@ export class BookService {
       throw new ConflictException('Book with this ISBN already exists');
 
     try {
-      const newBook = await this.bookModel.create(createBookDto);
+      const shouldBeFeatured =
+        (await this.bookModel.countDocuments({
+          featured: true,
+        })) < 12;
+
+      const newBook = await this.bookModel.create({
+        ...createBookDto,
+        featured: shouldBeFeatured,
+      });
 
       return newBook;
     } catch (error) {
@@ -102,6 +110,21 @@ export class BookService {
     const booksWithRatings = await this.enrichBooksWithRatings(books);
 
     return { data: booksWithRatings, total, page, limit };
+  }
+
+  async findNewBooks(): Promise<Book[]> {
+    const newBooks = await this.bookModel
+      .find()
+      .sort({ createdAt: -1 })
+      .limit(12)
+      .lean();
+
+    const booksWithRatings = await this.enrichBooksWithRatings(newBooks);
+
+    if (!newBooks || newBooks.length === 0)
+      throw new NotFoundException('Books not found');
+
+    return booksWithRatings;
   }
 
   async findOne(id: string): Promise<Book> {

@@ -24,6 +24,9 @@ export class Book extends Document {
   @Prop({ required: false })
   coverUrl: string;
 
+  @Prop({ required: true, default: false })
+  featured: boolean;
+
   @Prop({ default: false })
   delete: boolean;
 
@@ -34,6 +37,10 @@ export class Book extends Document {
 }
 
 export const BookSchema = SchemaFactory.createForClass(Book);
+
+BookSchema.index({ featured: 1, createdAt: -1 });
+BookSchema.index({ createdAt: -1 });
+BookSchema.index({ delete: 1 });
 
 BookSchema.virtual('reviews', {
   ref: 'Review',

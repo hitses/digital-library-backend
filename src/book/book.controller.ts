@@ -47,6 +47,16 @@ export class BookController {
     return this.bookService.search(query, +page, +limit);
   }
 
+  // Destacados
+
+  // Nuevos
+  @Get('new')
+  findNewBooks(): Promise<Book[]> {
+    return this.bookService.findNewBooks();
+  }
+
+  // Populares
+
   @Get(':id')
   findOne(@Param('id', MongoIdPipe) id: string): Promise<Book> {
     return this.bookService.findOne(id);
