@@ -9,6 +9,7 @@ import {
   Delete,
   Req,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { ReviewService } from './review.service';
 import { CreateReviewDto } from './dto/create-review.dto';
@@ -17,10 +18,20 @@ import { MongoIdPipe } from 'src/common/pipes/mongo-id.pipe';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { Review } from './entities/review.entity';
 import { Auth } from 'src/auth/decorators/auth.decorator';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('review')
 export class ReviewController {
-  constructor(private readonly reviewService: ReviewService) {}
+  private readonly defaultReviewPage: number;
+
+  constructor(
+    private readonly reviewService: ReviewService,
+    private readonly configService: ConfigService,
+  ) {
+    this.defaultReviewPage = Number(
+      this.configService.get('DEFAULT_REVIEW_PAGE'),
+    );
+  }
 
   @Post()
   @UseGuards(ThrottlerGuard)
@@ -35,6 +46,20 @@ export class ReviewController {
   @Get()
   findAll(): Promise<Review[]> {
     return this.reviewService.findAll();
+  }
+
+  @Get('book/:bookId')
+  findAllByBookId(
+    @Query('page') page = this.defaultReviewPage,
+    @Param('bookId', MongoIdPipe) bookId: string,
+  ): Promise<{
+    total: number;
+    totalPages: number;
+    page: number;
+    limit: number;
+    data: Review[];
+  }> {
+    return this.reviewService.findAllByBookId(bookId, page);
   }
 
   @Get(':id')

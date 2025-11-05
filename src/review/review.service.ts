@@ -15,10 +15,24 @@ import {
   createErrorResponse,
   updateErrorResponse,
 } from 'src/common/methods/errors';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ReviewService {
-  constructor(@InjectModel(Review.name) private reviewModel: Model<Review>) {}
+  private readonly defaultReviewPage: number;
+  private readonly defaultReviewLimit: number;
+
+  constructor(
+    @InjectModel(Review.name) private reviewModel: Model<Review>,
+    private readonly configService: ConfigService,
+  ) {
+    this.defaultReviewPage = Number(
+      this.configService.get('DEFAULT_REVIEW_PAGE'),
+    );
+    this.defaultReviewLimit = Number(
+      this.configService.get('DEFAULT_REVIEW_LIMIT'),
+    );
+  }
 
   async create(
     createReviewDto: CreateReviewDto,
@@ -44,8 +58,43 @@ export class ReviewService {
     }
   }
 
-  findAll(): Promise<Review[]> {
-    return this.reviewModel.find();
+  async findAll(): Promise<Review[]> {
+    return await this.reviewModel.find();
+  }
+
+  async findAllByBookId(
+    bookId: string,
+    page: number,
+  ): Promise<{
+    total: number;
+    totalPages: number;
+    page: number;
+    limit: number;
+    data: Review[];
+  }> {
+    const skip = (page - 1) * this.defaultReviewLimit;
+
+    const [data, total] = await Promise.all([
+      this.reviewModel
+        .find({ bookId: new Types.ObjectId(bookId), verified: true })
+        .skip(skip)
+        .limit(this.defaultReviewLimit)
+        .sort({ createdAt: -1 }),
+      this.reviewModel.countDocuments({
+        bookId: new Types.ObjectId(bookId),
+        verified: true,
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / this.defaultReviewLimit);
+
+    return {
+      total,
+      totalPages,
+      page: +page,
+      limit: this.defaultReviewLimit,
+      data,
+    };
   }
 
   async findOne(id: string): Promise<Review> {
