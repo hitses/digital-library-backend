@@ -14,14 +14,20 @@ import { UpdateBookDto } from './dto/update-book.dto';
 import { MongoIdPipe } from 'src/common/pipes/mongo-id.pipe';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { Book } from './entities/book.entity';
-import { PAGINATION } from 'src/common/constants/pagination.constants';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('book')
 export class BookController {
-  private readonly defaultPage = PAGINATION.DEFAULT_PAGE;
-  private readonly defaultLimit = PAGINATION.DEFAULT_LIMIT;
+  private readonly defaultPage;
+  private readonly defaultLimit;
 
-  constructor(private readonly bookService: BookService) {}
+  constructor(
+    private readonly bookService: BookService,
+    private readonly configService: ConfigService,
+  ) {
+    this.defaultPage = Number(this.configService.get('DEFAULT_PAGE'));
+    this.defaultLimit = Number(this.configService.get('DEFAULT_LIMIT'));
+  }
 
   @Post()
   @Auth()

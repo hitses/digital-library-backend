@@ -13,18 +13,22 @@ import {
   createErrorResponse,
   updateErrorResponse,
 } from 'src/common/methods/errors';
-import { PAGINATION } from 'src/common/constants/pagination.constants';
 import { Review } from 'src/review/entities/review.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class BookService {
-  private readonly defaultPage = PAGINATION.DEFAULT_PAGE;
-  private readonly defaultLimit = PAGINATION.DEFAULT_LIMIT;
+  private readonly defaultPage;
+  private readonly defaultLimit;
 
   constructor(
     @InjectModel(Book.name) private bookModel: Model<Book>,
     @InjectModel(Review.name) private reviewModel: Model<Review>,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.defaultPage = Number(this.configService.get('DEFAULT_PAGE'));
+    this.defaultLimit = Number(this.configService.get('DEFAULT_LIMIT'));
+  }
 
   async create(createBookDto: CreateBookDto): Promise<Book> {
     const existingBook = await this.bookModel.findOne({
@@ -47,7 +51,7 @@ export class BookService {
       const shouldBeFeatured =
         (await this.bookModel.countDocuments({
           featured: true,
-        })) < 8;
+        })) < this.defaultLimit;
 
       const newBook = await this.bookModel.create({
         ...createBookDto,
@@ -87,7 +91,7 @@ export class BookService {
   async search(
     query: string,
     page = 1,
-    limit = 8,
+    limit = this.defaultLimit,
   ): Promise<{
     data: Book[];
     total: number;
@@ -145,7 +149,7 @@ export class BookService {
     const newBooks = await this.bookModel
       .find()
       .sort({ createdAt: -1 })
-      .limit(8)
+      .limit(this.defaultLimit)
       .lean();
 
     const booksWithRatings = await this.enrichBooksWithRatings(newBooks);
@@ -204,8 +208,8 @@ export class BookService {
       // Orden: rating desc, fecha desc
       { $sort: { averageRating: -1, createdAt: -1 } },
 
-      // Top 8
-      { $limit: 8 },
+      // Top
+      { $limit: +this.defaultLimit },
 
       // Limpiar lookup intermedia
       { $project: { ratingData: 0 } },
@@ -258,14 +262,14 @@ export class BookService {
     // Contar destacados
     const count = await this.bookModel.countDocuments({ featured: true });
 
-    if (count < 8) {
+    if (count < this.defaultLimit) {
       book.featured = true;
       book.featuredAt = new Date();
 
       return book.save();
     }
 
-    // Hay 8 -> rotar: quitar el primer featured según featuredAt asc
+    // Hay límite (.env file) -> rotar: quitar el primer featured según featuredAt asc
     const oldestFeatured = await this.bookModel
       .findOne({ featured: true })
       .sort({ featuredAt: 1 })
