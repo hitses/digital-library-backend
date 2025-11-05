@@ -47,7 +47,7 @@ export class BookService {
       const shouldBeFeatured =
         (await this.bookModel.countDocuments({
           featured: true,
-        })) < 12;
+        })) < 8;
 
       const newBook = await this.bookModel.create({
         ...createBookDto,
@@ -87,7 +87,7 @@ export class BookService {
   async search(
     query: string,
     page = 1,
-    limit = 10,
+    limit = 8,
   ): Promise<{
     data: Book[];
     total: number;
@@ -145,7 +145,7 @@ export class BookService {
     const newBooks = await this.bookModel
       .find()
       .sort({ createdAt: -1 })
-      .limit(12)
+      .limit(8)
       .lean();
 
     const booksWithRatings = await this.enrichBooksWithRatings(newBooks);
@@ -204,8 +204,8 @@ export class BookService {
       // Orden: rating desc, fecha desc
       { $sort: { averageRating: -1, createdAt: -1 } },
 
-      // Top 12
-      { $limit: 12 },
+      // Top 8
+      { $limit: 8 },
 
       // Limpiar lookup intermedia
       { $project: { ratingData: 0 } },
@@ -273,14 +273,14 @@ export class BookService {
     // Contar destacados
     const count = await this.bookModel.countDocuments({ featured: true });
 
-    if (count < 12) {
+    if (count < 8) {
       book.featured = true;
       book.featuredAt = new Date();
 
       return book.save();
     }
 
-    // Hay 12 -> rotar: quitar el primer featured según featuredAt asc
+    // Hay 8 -> rotar: quitar el primer featured según featuredAt asc
     const oldestFeatured = await this.bookModel
       .findOne({ featured: true })
       .sort({ featuredAt: 1 })
