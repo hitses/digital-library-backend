@@ -215,25 +215,10 @@ export class BookService {
   }
 
   async findOne(id: string): Promise<Book> {
-    const book = await this.bookModel
-      .findOne({ _id: id, delete: false })
-      .populate({
-        path: 'reviews',
-        match: { verified: true },
-        select: 'name review rating createdAt',
-        options: { sort: { createdAt: -1 } },
-      })
-      .lean();
-
+    const book = await this.bookModel.findOne({ _id: id, delete: false });
     if (!book) throw new NotFoundException('Book not found or deleted');
 
-    const ratingStats = await this.calculateBookRating(id);
-
-    return {
-      ...book,
-      averageRating: ratingStats.averageRating,
-      totalReviews: ratingStats.totalReviews,
-    } as any;
+    return book;
   }
 
   async update(id: string, updateBookDto: UpdateBookDto): Promise<Book> {
