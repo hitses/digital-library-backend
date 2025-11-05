@@ -90,7 +90,7 @@ export class BookService {
 
   async search(
     query: string,
-    page = 1,
+    page = this.defaultPage,
     limit = this.defaultLimit,
   ): Promise<{
     data: Book[];
