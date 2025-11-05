@@ -64,7 +64,13 @@ export class BookService {
   async findAll(
     page: number = this.defaultPage,
     limit: number = this.defaultLimit,
-  ): Promise<{ data: Book[]; total: number; page: number; limit: number }> {
+  ): Promise<{
+    data: Book[];
+    total: number;
+    totalPages: number;
+    page: number;
+    limit: number;
+  }> {
     const skip = (page - 1) * limit;
 
     const [books, total] = await Promise.all([
@@ -73,15 +79,22 @@ export class BookService {
     ]);
 
     const booksWithRatings = await this.enrichBooksWithRatings(books);
+    const totalPages = Math.ceil(total / limit);
 
-    return { data: booksWithRatings, total, page, limit };
+    return { data: booksWithRatings, total, totalPages, page, limit };
   }
 
   async search(
     query: string,
     page = 1,
     limit = 10,
-  ): Promise<{ data: Book[]; total: number; page: number; limit: number }> {
+  ): Promise<{
+    data: Book[];
+    total: number;
+    totalPages: number;
+    page: number;
+    limit: number;
+  }> {
     const skip = (page - 1) * limit;
 
     // Si no hay query, buscar todos
@@ -109,8 +122,9 @@ export class BookService {
     ]);
 
     const booksWithRatings = await this.enrichBooksWithRatings(books);
+    const totalPages = Math.ceil(total / limit);
 
-    return { data: booksWithRatings, total, page, limit };
+    return { data: booksWithRatings, total, totalPages, page, limit };
   }
 
   async findFeaturedBooks(): Promise<Book[]> {

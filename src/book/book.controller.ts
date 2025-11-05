@@ -34,7 +34,13 @@ export class BookController {
   findAll(
     @Query('page') page = this.defaultPage,
     @Query('limit') limit = this.defaultLimit,
-  ): Promise<{ data: Book[]; total: number; page: number; limit: number }> {
+  ): Promise<{
+    data: Book[];
+    total: number;
+    totalPages: number;
+    page: number;
+    limit: number;
+  }> {
     return this.bookService.findAll(+page, +limit);
   }
 
@@ -43,7 +49,13 @@ export class BookController {
     @Query('q') query: string,
     @Query('page') page = this.defaultPage,
     @Query('limit') limit = this.defaultLimit,
-  ): Promise<{ data: Book[]; total: number; page: number; limit: number }> {
+  ): Promise<{
+    data: Book[];
+    total: number;
+    totalPages: number;
+    page: number;
+    limit: number;
+  }> {
     return this.bookService.search(query, +page, +limit);
   }
 
