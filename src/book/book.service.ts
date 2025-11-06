@@ -219,10 +219,18 @@ export class BookService {
   }
 
   async findOne(id: string): Promise<Book> {
-    const book = await this.bookModel.findOne({ _id: id, delete: false });
+    const book = await this.bookModel
+      .findOne({ _id: id, delete: false })
+      .lean();
+
     if (!book) throw new NotFoundException('Book not found or deleted');
 
-    return book;
+    const bookWithRatings = await this.calculateBookRating(book._id.toString());
+
+    return {
+      ...book,
+      ...bookWithRatings,
+    } as any;
   }
 
   async update(id: string, updateBookDto: UpdateBookDto): Promise<Book> {
@@ -387,9 +395,7 @@ export class BookService {
       },
     ]);
 
-    if (result.length === 0) {
-      return { averageRating: 0, totalReviews: 0 };
-    }
+    if (result.length === 0) return { averageRating: 0, totalReviews: 0 };
 
     return {
       averageRating: Math.round(result[0].averageRating * 10) / 10,
