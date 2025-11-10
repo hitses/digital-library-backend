@@ -17,6 +17,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { generateRandomPassword } from 'src/common/methods/random-password';
 import { MailService } from 'src/mail/mail.service';
 import { capitalizeWords } from 'src/common/methods/capitalize';
+import { ForgotDto } from './dto/forgot.dto';
 
 @Injectable()
 export class AuthService {
@@ -84,9 +85,16 @@ export class AuthService {
     }
   }
 
-  async forgotPassword(admin: Admin): Promise<void> {
+  async forgotPassword(forgotDto: ForgotDto): Promise<void> {
     try {
       const randomPassword = generateRandomPassword();
+
+      const admin = await this.adminModel.findOne({
+        email: forgotDto.email,
+        delete: false,
+      });
+
+      if (!admin) throw new NotFoundException('Admin not found');
 
       admin.password = await bcrypt.hash(randomPassword, 10);
 

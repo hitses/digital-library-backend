@@ -7,6 +7,7 @@ import { CurrentAdmin } from './decorators/current-admin.decorator';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { Admin } from 'src/admin/entities/admin.entity';
 import { SkipPasswordChangeCheck } from './decorators/skip-password-change-check.decorator';
+import { ForgotDto } from './dto/forgot.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -31,9 +32,9 @@ export class AuthController {
 
   @Patch('forgot')
   async forgotPassword(
-    @CurrentAdmin() admin: Admin,
+    @Body() forgotDto: ForgotDto,
   ): Promise<{ message: string }> {
-    await this.authService.forgotPassword(admin);
+    await this.authService.forgotPassword(forgotDto);
 
     return { message: 'Password reset successfully' };
   }
