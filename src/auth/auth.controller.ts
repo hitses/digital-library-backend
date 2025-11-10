@@ -30,7 +30,6 @@ export class AuthController {
   }
 
   @Patch('forgot')
-  @Auth()
   async forgotPassword(
     @CurrentAdmin() admin: Admin,
   ): Promise<{ message: string }> {
