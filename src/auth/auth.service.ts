@@ -14,12 +14,16 @@ import { LoginDto } from './dto/login.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { generateRandomPassword } from 'src/common/methods/random-password';
+import { MailService } from 'src/mail/mail.service';
+import { capitalizeWords } from 'src/common/methods/capitalize';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(Admin.name) private readonly adminModel: Model<Admin>,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
+    @InjectModel(Admin.name) private readonly adminModel: Model<Admin>,
   ) {}
 
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
@@ -78,5 +82,36 @@ export class AuthService {
         error,
       );
     }
+  }
+
+  async forgotPassword(admin: Admin): Promise<void> {
+    try {
+      const randomPassword = generateRandomPassword();
+
+      admin.password = await bcrypt.hash(randomPassword, 10);
+
+      admin.mustChangePassword = true;
+
+      await admin.save();
+
+      await this.sendEmail(admin, randomPassword);
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException('Could not reset password', error);
+    }
+  }
+
+  private async sendEmail(admin: Admin, password: string) {
+    await this.mailService.sendEmail(
+      admin.email,
+      `Contraseña de ${capitalizeWords(admin.name)} ${capitalizeWords(admin.lastname)}`,
+      './auth/register',
+      {
+        name: capitalizeWords(admin.name),
+        lastname: capitalizeWords(admin.lastname),
+        password,
+        year: new Date().getFullYear(),
+      },
+    );
   }
 }

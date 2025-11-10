@@ -8,6 +8,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Admin, AdminSchema } from 'src/admin/entities/admin.entity';
 import { AdminModule } from 'src/admin/admin.module';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { AdminModule } from 'src/admin/admin.module';
     ]),
     ConfigModule,
     AdminModule,
+    MailModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],

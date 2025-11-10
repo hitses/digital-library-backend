@@ -19,7 +19,7 @@ export class AuthController {
 
   @Patch('change-password')
   @Auth()
-  @SkipPasswordChangeCheck()
+  @SkipPasswordChangeCheck() // Obvia que el administrador haya cambiado su contraseña al menos una vez para este endpoint
   async changePassword(
     @CurrentAdmin() admin: Admin,
     @Body() changePasswordDto: ChangePasswordDto,
@@ -27,5 +27,15 @@ export class AuthController {
     await this.authService.changePassword(admin, changePasswordDto);
 
     return { message: 'Password changed successfully' };
+  }
+
+  @Patch('forgot')
+  @Auth()
+  async forgotPassword(
+    @CurrentAdmin() admin: Admin,
+  ): Promise<{ message: string }> {
+    await this.authService.forgotPassword(admin);
+
+    return { message: 'Password reset successfully' };
   }
 }
