@@ -55,10 +55,6 @@ export class AdminSeedService implements OnModuleInit {
         password: hashedPassword,
         mustChangePassword: false,
       });
-
-      this.logger.log(
-        `Default admin created successfully with email: ${defaultEmail}`,
-      );
     } catch (error) {
       this.logger.error('Error seeding default admin:', error);
     }
