@@ -50,6 +50,12 @@ export class BookController {
     return this.bookService.findAll(+page, +limit);
   }
 
+  @Get('count')
+  @Auth()
+  async getTotalCount(): Promise<number> {
+    return await this.bookService.getTotalCount();
+  }
+
   @Get('search')
   search(
     @Query('q') query: string,

@@ -88,6 +88,10 @@ export class BookService {
     return { data: booksWithRatings, total, totalPages, page, limit };
   }
 
+  getTotalCount(): Promise<number> {
+    return this.bookModel.countDocuments({ delete: false });
+  }
+
   async search(
     query: string,
     page = this.defaultPage,
