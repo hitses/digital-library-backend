@@ -88,8 +88,19 @@ export class BookService {
     return { data: booksWithRatings, total, totalPages, page, limit };
   }
 
-  getTotalCount(): Promise<number> {
-    return this.bookModel.countDocuments({ delete: false });
+  async getTotalCount(): Promise<number> {
+    return await this.bookModel.countDocuments({ delete: false });
+  }
+
+  async getLatestsBooks(limit: number = 3): Promise<Book[]> {
+    const latestBooks = await this.bookModel
+      .find({ delete: false })
+      .sort({ createdAt: -1 })
+      .limit(limit);
+
+    if (!latestBooks || latestBooks.length === 0) return [];
+
+    return latestBooks;
   }
 
   async search(

@@ -56,6 +56,12 @@ export class BookController {
     return await this.bookService.getTotalCount();
   }
 
+  @Get('latests')
+  @Auth()
+  async getLatestsBooks(@Query('limit') limit: string): Promise<Book[]> {
+    return await this.bookService.getLatestsBooks(+limit || 3);
+  }
+
   @Get('search')
   search(
     @Query('q') query: string,
