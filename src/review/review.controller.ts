@@ -54,6 +54,12 @@ export class ReviewController {
     return this.reviewService.findTotalCount();
   }
 
+  @Get('pendings')
+  @Auth()
+  findPendings(): Promise<number> {
+    return this.reviewService.findPendings();
+  }
+
   @Get('book/:bookId')
   findAllByBookId(
     @Query('page') page = this.defaultReviewPage,

@@ -66,6 +66,10 @@ export class ReviewService {
     return await this.reviewModel.countDocuments();
   }
 
+  async findPendings(): Promise<number> {
+    return await this.reviewModel.countDocuments({ verified: false });
+  }
+
   async findAllByBookId(
     bookId: string,
     page: number,
