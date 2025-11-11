@@ -48,7 +48,7 @@ export class ReviewController {
     return this.reviewService.findAll();
   }
 
-  @Get('total-count')
+  @Get('count')
   @Auth()
   findTotalCount(): Promise<number> {
     return this.reviewService.findTotalCount();
