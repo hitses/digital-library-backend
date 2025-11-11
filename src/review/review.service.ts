@@ -62,6 +62,10 @@ export class ReviewService {
     return await this.reviewModel.find();
   }
 
+  async findTotalCount(): Promise<number> {
+    return await this.reviewModel.countDocuments();
+  }
+
   async findAllByBookId(
     bookId: string,
     page: number,
