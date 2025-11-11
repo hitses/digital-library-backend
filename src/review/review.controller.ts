@@ -60,6 +60,12 @@ export class ReviewController {
     return this.reviewService.findPendings();
   }
 
+  @Get('latests')
+  @Auth()
+  findLatestsReviews(@Query('limit') limit: string): Promise<Review[]> {
+    return this.reviewService.findLatestsReviews(+limit || 3);
+  }
+
   @Get('book/:bookId')
   findAllByBookId(
     @Query('page') page = this.defaultReviewPage,

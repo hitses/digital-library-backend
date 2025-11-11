@@ -70,6 +70,18 @@ export class ReviewService {
     return await this.reviewModel.countDocuments({ verified: false });
   }
 
+  async findLatestsReviews(limit: number): Promise<Review[]> {
+    const reviews = await this.reviewModel
+      .find({ verified: true })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .populate('bookId', 'title');
+
+    if (!reviews.length) return [];
+
+    return reviews;
+  }
+
   async findAllByBookId(
     bookId: string,
     page: number,
