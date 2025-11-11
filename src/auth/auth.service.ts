@@ -86,20 +86,20 @@ export class AuthService {
   }
 
   async forgotPassword(forgotDto: ForgotDto): Promise<void> {
+    const admin = await this.adminModel.findOne({
+      email: forgotDto.email,
+      delete: false,
+    });
+
+    if (!admin) throw new NotFoundException('Admin not found');
+
+    const randomPassword = generateRandomPassword();
+
+    admin.password = await bcrypt.hash(randomPassword, 10);
+
+    admin.mustChangePassword = true;
+
     try {
-      const randomPassword = generateRandomPassword();
-
-      const admin = await this.adminModel.findOne({
-        email: forgotDto.email,
-        delete: false,
-      });
-
-      if (!admin) throw new NotFoundException('Admin not found');
-
-      admin.password = await bcrypt.hash(randomPassword, 10);
-
-      admin.mustChangePassword = true;
-
       await admin.save();
 
       await this.sendEmail(admin, randomPassword);
