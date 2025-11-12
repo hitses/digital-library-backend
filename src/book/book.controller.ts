@@ -62,6 +62,28 @@ export class BookController {
     return await this.bookService.getLatestsBooks(+limit || 3);
   }
 
+  @Get('recents')
+  @Auth()
+  async getRecentBooks(@Query('days') days: string): Promise<number> {
+    const total = await this.bookService.countRecentBooks(+days || 30);
+    return total;
+  }
+
+  @Get('reviewless')
+  @Auth()
+  async getReviewlessBooks(
+    @Query('page') page = this.defaultPage,
+    @Query('limit') limit = this.defaultLimit,
+  ): Promise<{
+    data: Book[];
+    total: number;
+    totalPages: number;
+    page: number;
+    limit: number;
+  }> {
+    return await this.bookService.getReviewlessBooks(+page, +limit);
+  }
+
   @Get('search')
   search(
     @Query('q') query: string,

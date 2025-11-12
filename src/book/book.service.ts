@@ -103,6 +103,46 @@ export class BookService {
     return latestBooks;
   }
 
+  async countRecentBooks(days: number = 30): Promise<number> {
+    const sinceDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    return this.bookModel.countDocuments({
+      createdAt: { $gte: sinceDate },
+      delete: false,
+    });
+  }
+
+  async getReviewlessBooks(
+    page: number = this.defaultPage,
+    limit: number = this.defaultLimit,
+  ): Promise<{
+    data: Book[];
+    total: number;
+    totalPages: number;
+    page: number;
+    limit: number;
+  }> {
+    const allBooks = await this.bookModel.find({ delete: false }).lean();
+    const booksWithRatings = await this.enrichBooksWithRatings(allBooks);
+
+    const reviewlessBooks = booksWithRatings.filter(
+      (book) => !book.totalReviews || book.totalReviews === 0,
+    );
+
+    const total = reviewlessBooks.length;
+    const totalPages = Math.ceil(total / limit);
+    const start = (page - 1) * limit;
+    const end = start + limit;
+
+    return {
+      data: reviewlessBooks.slice(start, end),
+      total,
+      totalPages,
+      page,
+      limit,
+    };
+  }
+
   async search(
     query: string,
     page = this.defaultPage,
