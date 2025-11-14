@@ -78,7 +78,12 @@ export class BookService {
     const skip = (page - 1) * limit;
 
     const [books, total] = await Promise.all([
-      this.bookModel.find({ delete: false }).skip(skip).limit(limit).lean(),
+      this.bookModel
+        .find({ delete: false })
+        .skip(skip)
+        .limit(limit)
+        .sort({ createdAt: -1 })
+        .lean(),
       this.bookModel.countDocuments({ delete: false }),
     ]);
 
