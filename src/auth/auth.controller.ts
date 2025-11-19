@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Patch } from '@nestjs/common';
+import { Body, Controller, Post, Patch, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
@@ -37,5 +37,11 @@ export class AuthController {
     await this.authService.forgotPassword(forgotDto);
 
     return { message: 'Password reset successfully' };
+  }
+
+  @Get('check-session')
+  @Auth()
+  checkSession(): { message: string } {
+    return { message: 'Session is valid' };
   }
 }
