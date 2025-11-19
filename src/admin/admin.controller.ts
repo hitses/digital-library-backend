@@ -30,6 +30,11 @@ export class AdminController {
     return this.adminService.findAll();
   }
 
+  @Get('me')
+  getCurrentAdmin(@CurrentAdmin() admin: Admin): Admin {
+    return admin;
+  }
+
   @Get(':id')
   findOne(@Param('id', MongoIdPipe) id: string) {
     return this.adminService.findOne(id);
