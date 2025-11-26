@@ -67,7 +67,23 @@ export class ReviewController {
   }
 
   @Get('book/:bookId')
+  @Auth()
   findAllByBookId(
+    @Query('page') page: number = this.defaultReviewPage,
+    @Query('verified') verified: boolean = false,
+    @Param('bookId', MongoIdPipe) bookId: string,
+  ): Promise<{
+    total: number;
+    totalPages: number;
+    page: number;
+    limit: number;
+    data: Review[];
+  }> {
+    return this.reviewService.findAllByBookId(bookId, page, verified);
+  }
+
+  @Get('verified/book/:bookId')
+  findVerifiedByBookId(
     @Query('page') page = this.defaultReviewPage,
     @Param('bookId', MongoIdPipe) bookId: string,
   ): Promise<{
@@ -77,7 +93,7 @@ export class ReviewController {
     limit: number;
     data: Review[];
   }> {
-    return this.reviewService.findAllByBookId(bookId, page);
+    return this.reviewService.findVerifiedByBookId(bookId, page);
   }
 
   @Get(':id')

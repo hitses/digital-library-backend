@@ -85,6 +85,42 @@ export class ReviewService {
   async findAllByBookId(
     bookId: string,
     page: number,
+    verified: boolean,
+  ): Promise<{
+    total: number;
+    totalPages: number;
+    page: number;
+    limit: number;
+    data: Review[];
+  }> {
+    const skip = (page - 1) * this.defaultReviewLimit;
+
+    const [data, total] = await Promise.all([
+      this.reviewModel
+        .find({ bookId: new Types.ObjectId(bookId), verified })
+        .skip(skip)
+        .limit(this.defaultReviewLimit)
+        .sort({ createdAt: -1 }),
+      this.reviewModel.countDocuments({
+        bookId: new Types.ObjectId(bookId),
+        verified,
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / this.defaultReviewLimit);
+
+    return {
+      total,
+      totalPages,
+      page: +page,
+      limit: this.defaultReviewLimit,
+      data,
+    };
+  }
+
+  async findVerifiedByBookId(
+    bookId: string,
+    page: number,
   ): Promise<{
     total: number;
     totalPages: number;
