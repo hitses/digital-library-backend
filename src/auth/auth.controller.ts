@@ -41,7 +41,7 @@ export class AuthController {
 
   @Get('check-session')
   @Auth()
-  checkSession(): { message: string } {
-    return { message: 'Session is valid' };
+  checkSession(@CurrentAdmin() admin: Admin): Promise<{ message: string }> {
+    return this.authService.checkSession(admin._id.toString());
   }
 }

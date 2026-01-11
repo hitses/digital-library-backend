@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -107,6 +108,20 @@ export class AuthService {
       console.log(error);
       throw new InternalServerErrorException('Could not reset password', error);
     }
+  }
+
+  async checkSession(adminId: string): Promise<{ message: string }> {
+    const admin = await this.adminModel.findById(adminId);
+
+    if (!admin) throw new ForbiddenException('User not found');
+
+    // Se verifica si el administrador necesita cambiar la contraseña
+    if (admin.mustChangePassword)
+      throw new ForbiddenException(
+        'Password change required before proceeding',
+      );
+
+    return { message: 'Session is valid' };
   }
 
   private async sendEmail(admin: Admin, password: string) {

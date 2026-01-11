@@ -58,8 +58,45 @@ export class ReviewService {
     }
   }
 
-  async findAll(): Promise<Review[]> {
-    return await this.reviewModel.find();
+  async findAll(
+    page: number = this.defaultReviewPage,
+    limit: number = this.defaultReviewLimit,
+    verified?: boolean,
+  ): Promise<{
+    data: Review[];
+    total: number;
+    totalPages: number;
+    page: number;
+    limit: number;
+  }> {
+    // Se construye el objeto de filtro: el estado de verificación es opcional
+    const query: any = {};
+    if (verified !== undefined) {
+      query.verified = verified;
+    }
+
+    const skip = (page - 1) * limit;
+
+    // Se obtienen las reseñas filtradas: se requiere la renovación de los datos del libro asociado
+    const reviews = await this.reviewModel
+      .find(query) // Se aplica el filtro aquí
+      .populate('bookId', 'title coverUrl')
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 })
+      .exec();
+
+    // Se calcula el número total de documentos que coinciden con el filtro: es obligatorio para la paginación
+    const total = await this.reviewModel.countDocuments(query);
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: reviews,
+      total,
+      totalPages,
+      page,
+      limit,
+    };
   }
 
   async findTotalCount(): Promise<number> {

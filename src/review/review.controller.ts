@@ -23,6 +23,7 @@ import { ConfigService } from '@nestjs/config';
 @Controller('review')
 export class ReviewController {
   private readonly defaultReviewPage: number;
+  private readonly defaultReviewLimit: number;
 
   constructor(
     private readonly reviewService: ReviewService,
@@ -30,6 +31,9 @@ export class ReviewController {
   ) {
     this.defaultReviewPage = Number(
       this.configService.get('DEFAULT_REVIEW_PAGE'),
+    );
+    this.defaultReviewLimit = Number(
+      this.configService.get('DEFAULT_REVIEW_LIMIT'),
     );
   }
 
@@ -44,8 +48,22 @@ export class ReviewController {
   }
 
   @Get()
-  findAll(): Promise<Review[]> {
-    return this.reviewService.findAll();
+  @Auth()
+  findAll(
+    @Query('page') page = this.defaultReviewPage,
+    @Query('limit') limit = this.defaultReviewLimit,
+    @Query('verified') verified?: string,
+  ): Promise<{
+    data: Review[];
+    total: number;
+    totalPages: number;
+    page: number;
+    limit: number;
+  }> {
+    const isVerified =
+      verified === 'true' ? true : verified === 'false' ? false : undefined;
+
+    return this.reviewService.findAll(+page, +limit, isVerified);
   }
 
   @Get('count')
