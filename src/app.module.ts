@@ -7,6 +7,7 @@ import { MailModule } from './mail/mail.module';
 import { BookModule } from './book/book.module';
 import { ReviewModule } from './review/review.module';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
         limit: 20,
       },
     ]),
+    HealthModule,
     AuthModule,
     AdminModule,
     MailModule,
