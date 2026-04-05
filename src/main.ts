@@ -1,14 +1,18 @@
-import { NestFactory } from '@nestjs/core';
 import { Request, Response, NextFunction } from 'express';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { sessionConfig } from './config/session.config';
 import { corsOptions } from './config/cors.config';
 import { globalValidationPipe } from './config/validation.config';
 import { Logger } from '@nestjs/common';
+import { healthCorsMiddleware } from './config/health-cors.middleware';
 
 async function bootstrap() {
   // Start the application from the main module
   const app = await NestFactory.create(AppModule);
+
+  // Middleware CORS abierto solo para /health
+  app.use('/health', healthCorsMiddleware);
 
   // Configure session middleware
   app.use(sessionConfig);

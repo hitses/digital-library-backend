@@ -11,5 +11,5 @@ export const corsOptions = {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true, // Enable credentials for session cookies
+  credentials: true,
 };
